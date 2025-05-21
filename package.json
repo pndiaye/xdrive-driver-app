@@ -43,7 +43,8 @@
     "expo-device": "~7.1.4",
     "expo-intent-launcher": "~12.1.4",
     "expo-sharing": "~13.1.5",
-    "expo-file-system": "~18.1.9"
+    "expo-file-system": "~18.1.9",
+    "expo-dev-client": "~5.1.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

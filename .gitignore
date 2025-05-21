@@ -36,4 +36,14 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# EAS
+android/keystores/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+credentials.json
+
 app-example

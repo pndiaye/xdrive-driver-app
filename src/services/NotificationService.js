@@ -46,8 +46,10 @@ export const registerForPushNotifications = async () => {
     
     // Obtenir le token Expo
     const token = await Notifications.getExpoPushTokenAsync({
-      projectId: "your-project-id", // À remplacer par votre ID de projet Expo
+      projectId: "148107ae-6aa5-4c92-9320-b848b079814c", // À remplacer par votre ID de projet Expo
     });
+
+    console.log("EXPO_PUSH_TOKEN=", token.data);
     
     // Sauvegarder le token localement
     await AsyncStorage.setItem(NOTIFICATION_TOKEN_KEY, token.data);
