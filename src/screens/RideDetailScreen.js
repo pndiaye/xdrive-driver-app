@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { COLORS, SIZES } from '../constants';
 import { acceptRide } from '../services/ApiService';
-import { openFile, savePDFFromBlob, shareFile } from '../services/FileService';
+import { openFile, shareFile } from '../services/FileService';
 
 
 
@@ -22,14 +22,20 @@ const RideDetailScreen = ({ navigation, route }) => {
   const [currentStatus, setCurrentStatus] = useState('pending');
   // Dans votre composant RideDetailScreen, ajoutez:
 const [bonCommandeUri, setBonCommandeUri] = useState(null);
+const [errorMessage, setErrorMessage] = useState('');
   
   // Fonction pour accepter une course
 const handleAcceptRide = async () => {
+  console.log('Acceptation de la course...1');
     setIsLoading(true);
-    setError(null);
+    console.log('Acceptation de la course...2');
+    setErrorMessage('');
+    console.log('Acceptation de la course...3');
     
     try {
+      console.log('Acceptation de la course...');
       const response = await acceptRide(ride.id);
+      console.log('Course acceptée:', response);
       
       // Mettre à jour le statut
       setCurrentStatus('assigned');
@@ -38,7 +44,7 @@ const handleAcceptRide = async () => {
       if (response.bonCommande) {
         try {
           // Télécharger le fichier
-          const blob = await downloadFile(response.bonCommande);
+         /* const blob = await downloadFile(response.bonCommande);
           
           // Sauvegarder localement
           const filename = `bon_commande_${ride.id}.pdf`;
@@ -46,7 +52,7 @@ const handleAcceptRide = async () => {
           
           // Mettre à jour l'état
           setBonCommandeUri(fileUri);
-          
+          */
           Alert.alert(
             'Bon de commande',
             'Le bon de commande a été téléchargé avec succès.',
@@ -66,7 +72,7 @@ const handleAcceptRide = async () => {
         'Vous avez accepté cette course avec succès!'
       );
     } catch (error) {
-      setError('Impossible d\'accepter cette course. Veuillez réessayer.');
+      setErrorMessage('Impossible d\'accepter cette course. Veuillez réessayer.');
       console.error('Erreur lors de l\'acceptation de la course:', error);
     } finally {
       setIsLoading(false);
@@ -168,27 +174,33 @@ const handleAcceptRide = async () => {
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Heure:</Text>
-            <Text style={styles.infoValue}>{ride.pickupTime}</Text>
+            <Text style={styles.infoValue}>{ride.pickup_time}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Départ:</Text>
-            <Text style={styles.infoValue}>{ride.pickupLocation}</Text>
+            <Text style={styles.infoValue}>{ride.pickup_address}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Distance chauffeur:</Text>
+            <Text style={styles.infoValue}>{ride.distance.toFixed(3)} km</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Arrivée:</Text>
-            <Text style={styles.infoValue}>{ride.dropoffLocation}</Text>
+            <Text style={styles.infoValue}>{ride.dropoff_address}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Distance:</Text>
-            <Text style={styles.infoValue}>{ride.distance} km</Text>
+            <Text style={styles.infoValue}>{ride.estimated_distance} km</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Durée:</Text>
-            <Text style={styles.infoValue}>{ride.duration} min</Text>
+            <Text style={styles.infoValue}>{Math.floor(ride.estimated_duration / 3600)}h{" "}
+              {Math.floor((ride.estimated_duration % 3600) / 60)}m</Text>
           </View>
           
           <View style={styles.infoRow}>

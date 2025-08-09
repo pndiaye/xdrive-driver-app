@@ -3,7 +3,7 @@ import { getSavedPosition } from './LocationService';
 import { getSavedPushToken } from './NotificationService';
 
 // URL de base de l'API
-const API_BASE_URL = 'https://nice-transfert-server-pnwireframe.replit.app/'; // À remplacer par votre URL réelle
+const API_BASE_URL = 'https://nice-transfert-server-pnwireframe.replit.app'; // À remplacer par votre URL réelle
 
 // Fonction pour récupérer le token d'authentification
 const getAuthToken = async () => {
@@ -86,7 +86,7 @@ export const updateDriverLocation = async () => {
     throw new Error('Position non disponible');
   }
   
-  return fetchWithAuth('/api/driver/update-location', {
+  return fetchWithAuth('/api/driver/location', {
     method: 'POST',
     body: JSON.stringify({
       latitude: position.latitude,
@@ -96,23 +96,19 @@ export const updateDriverLocation = async () => {
   });
 };
 
-// Récupérer les courses disponibles
-export const getPendingRides = async () => {
-  return fetchWithAuth('/api/driver/pending-rides', {
-    method: 'GET',
-  });
-};
+
 
 // Accepter une course
 export const acceptRide = async (rideId) => {
-  return fetchWithAuth(`/api/driver/accept-ride/${rideId}`, {
+  return fetchWithAuth('/api/ride/accept', {
     method: 'POST',
+    body: JSON.stringify({ rideId }),
   });
 };
 
 // Mettre à jour le statut d'une course
 export const updateRideStatus = async (rideId, status) => {
-  return fetchWithAuth(`/api/driver/ride-status/${rideId}`, {
+  return fetchWithAuth(`/api/ride/${rideId}/status`, {
     method: 'PUT',
     body: JSON.stringify({ status }),
   });
@@ -136,3 +132,91 @@ export const downloadFile = async (fileUrl) => {
   // Retourner le blob
   return await response.blob();
 };
+
+// Refuser une course
+export const declineRide = async (rideId, reason = '') => {
+  return fetchWithAuth('/api/ride/decline', {
+    method: 'POST',
+    body: JSON.stringify({ rideId, reason }),
+  });
+};
+
+// Récupérer les détails d'une course
+export const getRideDetails = async (rideId) => {
+  return fetchWithAuth(`/api/ride/${rideId}`, {
+    method: 'GET',
+  });
+};
+
+// Enregistrer un événement de course
+export const logRideEvent = async (rideId, eventType, eventData = {}) => {
+  return fetchWithAuth('/api/ride/event', {
+    method: 'POST',
+    body: JSON.stringify({
+      rideId,
+      eventType,
+      ...eventData
+    }),
+  });
+};
+
+// Récupérer le bon de commande
+export const getBonCommande = async (rideId) => {
+  return fetchWithAuth(`/api/ride/bon-commande/${rideId}`, {
+    method: 'GET',
+  });
+};
+
+// Historique des courses
+export const getRideHistory = async (page = 1, limit = 10) => {
+  return fetchWithAuth(`/api/driver/ride-history?page=${page}&limit=${limit}`, {
+    method: 'GET',
+  });
+};
+
+// Statistiques du chauffeur
+export const getDriverStats = async (period = 'semaine') => {
+  return fetchWithAuth(`/api/driver/stats?period=${period}`, {
+    method: 'GET',
+  });
+};
+
+// Profil du chauffeur
+export const getDriverProfile = async () => {
+  return fetchWithAuth('/api/driver/profile', {
+    method: 'GET',
+  });
+};
+
+export const updateDriverProfile = async (profileData) => {
+  return fetchWithAuth('/api/driver/profile', {
+    method: 'PUT',
+    body: JSON.stringify(profileData),
+  });
+};
+
+// Enregistrer le token push - CORRIGER LE NOM DU PARAMÈTRE
+export const registerPushToken = async (token) => {
+  console.log('Enregistrement du token push...');
+  return fetchWithAuth('/api/driver/register-push-token', {
+    method: 'POST',
+    body: JSON.stringify({ pushToken: token }), // ⚠️ Paramètre serveur : "pushToken"
+  });
+};
+
+// Récupérer le statut de disponibilité
+export const getAvailabilityStatus = async () => {
+  return fetchWithAuth('/api/driver/availability', {
+    method: 'GET',
+  });
+};
+
+// Renommer cette fonction (optionnel) :
+export const getAvailableRides = async () => {
+  return fetchWithAuth('/api/driver/available-rides', {
+    method: 'GET',
+  });
+};
+
+// Et garder getPendingRides comme alias :
+export const getPendingRides = getAvailableRides;

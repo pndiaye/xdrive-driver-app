@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { registerPushToken } from './ApiService';
 
 // Clé pour stocker le token de notification
 const NOTIFICATION_TOKEN_KEY = 'expo_push_token';
@@ -8,7 +9,7 @@ const NOTIFICATION_TOKEN_KEY = 'expo_push_token';
 // Configurer le comportement des notifications
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -44,6 +45,7 @@ export const registerForPushNotifications = async () => {
       return null;
     }
     
+    console.log('Enregistrement pour les notifications push...');
     // Obtenir le token Expo
     const token = await Notifications.getExpoPushTokenAsync({
       projectId: "148107ae-6aa5-4c92-9320-b848b079814c", // À remplacer par votre ID de projet Expo
@@ -53,6 +55,8 @@ export const registerForPushNotifications = async () => {
     
     // Sauvegarder le token localement
     await AsyncStorage.setItem(NOTIFICATION_TOKEN_KEY, token.data);
+
+    registerPushToken(token.data);
     
     // Renvoyer le token
     return token.data;

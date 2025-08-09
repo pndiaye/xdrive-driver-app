@@ -1,17 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-    FlatList,
-    RefreshControl,
-    SafeAreaView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { COLORS, SIZES } from '../constants';
-import { requestLocationPermission, startLocationTracking } from '../services/LocationService';
+import { getPendingRides } from '../services/ApiService';
+import { requestLocationPermission, startLocationTracking, toggleDriverAvailability } from '../services/LocationService';
 
 
 
@@ -44,6 +46,7 @@ const HomeScreen = ({ navigation }) => {
   const [isAvailable, setIsAvailable] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [userName, setUserName] = useState('');
+  const [pendingRides, setPendingRides] = useState([]);
 
   // Dans votre composant HomeScreen, ajoutez :
 const locationSubscriptionRef = useRef(null);
@@ -57,9 +60,9 @@ useEffect(() => {
       fetchPendingRides();
       
       // Puis configurer un intervalle pour les rafraîchir (toutes les 30 secondes)
-      refreshInterval = setInterval(() => {
+     /* refreshInterval = setInterval(() => {
         fetchPendingRides();
-      }, 30000);
+      }, 30000);*/
     }
     
     // Nettoyage
@@ -75,7 +78,8 @@ useEffect(() => {
     try {
       setRefreshing(true);
       const response = await getPendingRides();
-      setPendingRides(response.pendingRides || []);
+      console.log('Courses pendantes:', response);
+      setPendingRides(response || []);
     } catch (error) {
       console.error('Erreur lors de la récupération des courses:', error);
       // Facultatif: afficher une alerte ou un message d'erreur
@@ -105,20 +109,30 @@ useEffect(() => {
           setIsAvailable(false);
           return;
         }
+
+       const savedDriverId = await AsyncStorage.getItem('driverId');
+        if (!savedDriverId) {
+          console.warn('ID du chauffeur manquant');
+          return;
+        }
         
         // Démarrer le suivi de position
-        locationSubscriptionRef.current = await startLocationTracking(
+         const success = await startLocationTracking(
+          savedDriverId,
           (position) => {
             if (isMounted) {
               console.log('Position mise à jour:', position);
-              // Vous pourriez stocker la position dans l'état si nécessaire
             }
           }
         );
-      } else if (locationSubscriptionRef.current) {
-        // Arrêter le suivi si l'utilisateur n'est plus disponible
-        locationSubscriptionRef.current.remove();
-        locationSubscriptionRef.current = null;
+        if (!success && isMounted) {
+          Alert.alert('Erreur', 'Impossible de démarrer le suivi de position.');
+          setIsAvailable(false);
+        }
+      }  else {
+        // Utiliser la fonction stopLocationTracking du service
+        const { stopLocationTracking } = await import('../services/LocationService');
+        await stopLocationTracking();
       }
     } catch (error) {
       console.error('Erreur lors du suivi de position:', error);
@@ -134,9 +148,9 @@ useEffect(() => {
   // Nettoyage lorsque le composant est démonté
   return () => {
     isMounted = false;
-    if (locationSubscriptionRef.current) {
-      locationSubscriptionRef.current.remove();
-    }
+   import('../services/LocationService').then(({ stopLocationTracking }) => {
+      stopLocationTracking().catch(console.error);
+    });
   };
 }, [isAvailable]);
 
@@ -172,19 +186,18 @@ useEffect(() => {
   };
 
   const handleRefresh = () => {
-    setRefreshing(true);
-    
-    // Simuler un chargement
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    fetchPendingRides();
   };
 
   const handleAvailabilityChange = async (value) => {
+    
     if (value) {
+      console.log('Activation de la disponibilité');
       // Si on active la disponibilité, vérifier les permissions
       const hasPermission = await requestLocationPermission();
+      console.log('Disponibilité active :', hasPermission, 'Demande de permission de disponibilité');
       if (!hasPermission) {
+        
         Alert.alert(
           'Permission requise',
           'Pour recevoir des courses, nous avons besoin de votre position.',
@@ -200,6 +213,8 @@ useEffect(() => {
     setIsAvailable(value);
     
     try {
+      // Met à jour le statut dans AsyncStorage + envoie la dispo + position
+    await toggleDriverAvailability(value);
       // Mettre à jour le statut dans le stockage local
       const userInfo = await AsyncStorage.getItem('userInfo');
       if (userInfo) {
@@ -220,28 +235,29 @@ useEffect(() => {
       <View style={styles.rideHeader}>
         <Text style={styles.ridePrice}>{item.price}€</Text>
         <View style={styles.rideInfo}>
-          <Text style={styles.rideTime}>{item.pickupTime}</Text>
+          <Text style={styles.rideTime}>{item.pickup_time}</Text>
           <View 
             style={[
               styles.paymentBadge, 
-              item.paymentMethod === 'cash' ? styles.cashBadge : styles.cardBadge
+              item.payment_method === 'cash' ? styles.cashBadge : styles.cardBadge
             ]}
           >
             <Text style={styles.paymentBadgeText}>
-              {item.paymentMethod === 'cash' ? 'Espèces' : 'Carte'}
+              {item.payment_method === 'cash' ? 'Espèces' : 'Carte'}
             </Text>
           </View>
         </View>
       </View>
       
       <View style={styles.rideLocations}>
-        <Text style={styles.locationText} numberOfLines={1}>Départ: {item.pickupLocation}</Text>
-        <Text style={styles.locationText} numberOfLines={1}>Arrivée: {item.dropoffLocation}</Text>
+        <Text style={styles.locationText} numberOfLines={1}>Départ: {item.pickup_address}</Text>
+        <Text style={styles.locationText} numberOfLines={1}>Arrivée: {item.dropoff_address}</Text>
       </View>
       
       <View style={styles.rideFooter}>
-        <Text style={styles.rideDetail}>{item.distance} km</Text>
-        <Text style={styles.rideDetail}>{item.duration} min</Text>
+        <Text style={styles.rideDetail}>{item.estimated_distance} km</Text>
+        <Text style={styles.rideDetail}>{Math.floor(item.estimated_duration / 3600)}h{" "}
+              {Math.floor((item.estimated_duration % 3600) / 60)}m</Text>
       </View>
     </TouchableOpacity>
   );
@@ -281,7 +297,7 @@ useEffect(() => {
         
         {isAvailable ? (
           <FlatList
-            data={dummyRides}
+            data={pendingRides}
             keyExtractor={(item) => item.id}
             renderItem={renderRideItem}
             style={styles.ridesList}

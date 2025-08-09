@@ -9,25 +9,29 @@
       "distribution": "internal",
       "ios": {
         "resourceClass": "m-medium"
-      }
+      },
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
       "ios": {
         "resourceClass": "m-medium"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "ios": {
+        "distribution": "store",
         "resourceClass": "m-medium"
-      }
+      },
+      "channel": "production"
     }
   },
   "submit": {
     "production": {
       "ios": {
         "appleId": "pnwireframe@gmail.com",
-        "ascAppId": "6746194488", 
+        "ascAppId": "6746194488",
         "appleTeamId": "TZXN82NA8U"
       }
     }

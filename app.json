@@ -2,7 +2,7 @@
   "expo": {
     "name": "XDrive Driver App",
     "slug": "xdrive-driver-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,6 +20,12 @@
       "buildNumber": "1.0.0",
       "infoPlist": {
         "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification",
+          "location",
+          "fetch",
+          "remote-notification",
           "location",
           "fetch",
           "remote-notification",
@@ -55,6 +61,12 @@
       "eas": {
         "projectId": "148107ae-6aa5-4c92-9320-b848b079814c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/148107ae-6aa5-4c92-9320-b848b079814c"
     }
   }
 }
