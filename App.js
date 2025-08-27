@@ -29,6 +29,7 @@ export default function App() {
   // Gérer la connexion réussie
     const setupNotifications = async () => {
     try {
+      console.log("Registering for push notifications...");
       // Enregistrer pour les notifications push
       await registerForPushNotifications();
       

@@ -2,7 +2,7 @@
   "expo": {
     "name": "XDrive Driver App",
     "slug": "xdrive-driver-app",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.xdrive.xdrivedriverapp",
-      "buildNumber": "1.0.2",
+      "buildNumber": "1.0.3",
       "infoPlist": {
         "UIBackgroundModes": [
           "location",
